@@ -1,6 +1,6 @@
 package fr.campus.dungeondicemonsters;
 
-// Importation des équipements depuis le sous-dossier stuff
+// Importation des classes nécessaires
 import fr.campus.dungeondicemonsters.Characters.Character;
 import fr.campus.dungeondicemonsters.Characters.Ninja;
 import fr.campus.dungeondicemonsters.Characters.Warrior;
@@ -11,72 +11,96 @@ import fr.campus.dungeondicemonsters.stuff.Spell;
 import fr.campus.dungeondicemonsters.stuff.Potion;
 import fr.campus.dungeondicemonsters.stuff.Kunai;
 import fr.campus.dungeondicemonsters.stuff.SmokeBomb;
+import fr.campus.dungeondicemonsters.stuff.BlackSuite; // Ajouté pour donner une vraie défense au Ninja
 
 public class Main {
 
     public static void main(String[] args) {
-        // 1. On prépare notre outil de communication
+
         Menu menu = new Menu();
-        //Menu (le premier) : C'est le Type. je dis à Java que la variable va contenir un objet construit selon le plan de la classe Menu
-        //menu (le deuxième) : C'est le Nom (l'identifiant). C'est l'étiquette que je colles sur mon objet pour l'appeler plus tard
-        //Menu() : C'est l'appel au Constructeur. Il exécute le code à l'intérieur de la classe Menu (qui prépare le Scanner).
 
-
-        //menu = fait reference à la ligne 7 le menu que j'ai creer a ce moment la "c'est le menu précis que j'ai frabriqué pour une nouvelle partie
         menu.displayMessage("=== Bienvenue dans Dungeon Dice Monsters ===");
-        //displayMessage = méthode créée dans la clase menu pour retourné un msg
-        // 2. On demande le type de personnage
         menu.displayMessage("Choisissez votre classe (1: Guerrier, 2: Mage, 3: Ninja) :");
         String choixType = menu.getUserInput();
 
-        // 3. On demande le nom
         menu.displayMessage("Entrez le nom de votre héros :");
         String nomChoisi = menu.getUserInput();
 
-        // 4. Logique de création (On utilise des variables vides pour l'instant)
         Character monHeros = null;
-        //Character : c'est le "Type parent" j'utilise la classe mere car elle est assez large pour accepter n'importe quelle enfant (Guerrier, Mage, Ninja).
-        //monHeros : Le nom de ta variable qui contiendra le personnage choisi.
-        //null : On crée la boîte, mais on ne sait pas encore quel personnage mettre dedans tant que le joueur n'a pas choisi.
 
         if (choixType.equals("1")) {
-            monHeros = new Warrior(nomChoisi); //monHeros récupère la boîte vide ligne 25
-
-            // Création et équipement des items pour le Guerrier
-            Weapon epee = new Weapon("Épée en bois", 2);
-            Shield bouclier = new Shield("Petit bouclier", 1);
-            monHeros.setOffensiveEquipment(epee);
-            monHeros.setDefensiveEquipment(bouclier);
+            monHeros = new Warrior(nomChoisi);
+            monHeros.setOffensiveEquipment(new Weapon("Épée en bois", 2));
+            monHeros.setDefensiveEquipment(new Shield("Petit bouclier", 1));
 
         } else if (choixType.equals("2")) {
-            monHeros = new Wizard(nomChoisi);// new (Warrior; Wizard ; Ninja) fabrique un objet de la classe en question
-
-            // Création et équipement des items pour le Mage
-            Spell feu = new Spell("Boule de feu", 3);
-            Potion soin = new Potion("Potion mineure", 2);
-            monHeros.setOffensiveEquipment(feu);
-            monHeros.setDefensiveEquipment(soin);
+            monHeros = new Wizard(nomChoisi);
+            monHeros.setOffensiveEquipment(new Spell("Boule de feu", 3));
+            // CORRECTION : La potion demande maintenant 3 informations, dont un vrai/faux à la fin
+            monHeros.setDefensiveEquipment(new Potion("Potion mineure", 2, false));
 
         } else if (choixType.equals("3")) {
-            monHeros = new Ninja(nomChoisi);//(nomChoisi) passe en paramètre le texte que le joueur vas saisir
+            monHeros = new Ninja(nomChoisi);
+            // CORRECTION : La SmokeBomb demande maintenant un nom, un bonus attaque ET un bonus magie
+            monHeros.setOffensiveEquipment(new SmokeBomb("Fumigène", 1, 2));
+            // CORRECTION : La SmokeBomb étant offensive, on donne une vraie armure au Ninja pour sa défense
+            monHeros.setDefensiveEquipment(new BlackSuite("Tenue de l'ombre", 3));
 
-            // Création et équipement des items pour le Ninja
-            Kunai kunai = new Kunai("Kunai d'acier", 2);
-            SmokeBomb fumigene = new SmokeBomb("Fumigène", 1);
-            monHeros.setOffensiveEquipment(kunai);
-            monHeros.setDefensiveEquipment(fumigene);
-
-        } else {                            // le text vas aller jusqu'au constructeur des perso puis vers le "super()" du constucteur perso
+        } else {
             menu.displayMessage("Choix invalide, un Guerrier par défaut a été créé.");
             monHeros = new Warrior(nomChoisi);
             monHeros.setOffensiveEquipment(new Weapon("Épée rouillée", 1));
         }
 
-        // 5. On affiche le résultat grâce au toString() qu'on a codé
-        menu.displayMessage("Félicitations ! Voici votre personnage :");
+        menu.displayMessage("\nFélicitations ! Voici votre personnage :");
         menu.displayMessage(monHeros.toString());
 
-        // 6. On n'oublie pas de fermer le scanner à la fin
+        // =========================================================
+        // === NOUVELLE PARTIE : LE LANCEMENT DU MOTEUR DE JEU ===
+        // =========================================================
+
+        menu.displayMessage("\nAppuyez sur Entrée pour commencer l'aventure !");
+        menu.getUserInput(); // Fait une pause en attendant la touche Entrée
+
+        // 1. On allume le moteur (Création du plateau et du pion)
+        Game game = new Game();
+
+        // 2. On crée une étiquette qui dit que la partie est en cours
+        boolean partieEnCours = true;
+
+        // 3. LA BOUCLE DE JEU (Game Loop)
+        // Tant que "partieEnCours" est Vrai, on répète ce bloc de code à l'infini
+        while (partieEnCours) {
+            menu.displayMessage("\n--- NOUVEAU TOUR ---");
+            menu.displayMessage("Tapez '1' pour lancer le dé, ou 'q' pour quitter :");
+            String action = menu.getUserInput();
+
+            if (action.equalsIgnoreCase("q")) {
+                // Si le joueur tape 'q', on change l'étiquette en Faux.
+                // La boucle va s'arrêter et le jeu se termine.
+                menu.displayMessage("Vous fuyez le donjon lâchement... Fin de la partie.");
+                partieEnCours = false;
+            } else {
+
+                // [NOUVEAU] LE FILET DE SÉCURITÉ (try / catch)
+                try {
+                    // On "essaye" de faire jouer un tour.
+                    // Si le joueur dépasse 64, cette ligne déclenche l'alarme et le code saute directement au "catch"
+                    game.playTurn(monHeros);
+
+                } catch (OutOfBoardException e) {
+                    // SI l'alarme sonne, on l'attrape ici !
+
+                    // On affiche proprement le message de l'erreur (ex: "Victoire ! ... a dépassé la case 64")
+                    menu.displayMessage(e.getMessage());
+
+                    // On change l'étiquette pour arrêter la boucle et terminer la partie
+                    partieEnCours = false;
+                }
+            }
+        }
+
+        // On ferme proprement le scanner à la toute fin du programme
         menu.closeMenu();
     }
 }

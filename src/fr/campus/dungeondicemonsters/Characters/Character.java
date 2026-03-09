@@ -1,4 +1,4 @@
-package fr.campus.dungeondicemonsters.characters;
+package fr.campus.dungeondicemonsters.Characters; // ICI : J'ai mis le grand 'C'
 
 import fr.campus.dungeondicemonsters.stuff.OffensiveEquipment;
 import fr.campus.dungeondicemonsters.stuff.DefensiveEquipment;
