@@ -1,4 +1,4 @@
-package fr.campus.dungeondicemonsters;
+package fr.campus.dungeondicemonsters.Characters;
 
 public class Wizard extends Character {
 

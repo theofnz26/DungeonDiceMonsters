@@ -1,4 +1,4 @@
-package fr.campus.dungeondicemonsters;
+package fr.campus.dungeondicemonsters.Characters;
 
 // 'extends' indique que le Warrior EST un Character
 //Cela indique à l'ordi que la nouvelle classe est une "fille" de la classe mère "Character".

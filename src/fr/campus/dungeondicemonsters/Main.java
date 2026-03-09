@@ -1,6 +1,10 @@
 package fr.campus.dungeondicemonsters;
 
 // Importation des équipements depuis le sous-dossier stuff
+import fr.campus.dungeondicemonsters.Characters.Character;
+import fr.campus.dungeondicemonsters.Characters.Ninja;
+import fr.campus.dungeondicemonsters.Characters.Warrior;
+import fr.campus.dungeondicemonsters.Characters.Wizard;
 import fr.campus.dungeondicemonsters.stuff.Weapon;
 import fr.campus.dungeondicemonsters.stuff.Shield;
 import fr.campus.dungeondicemonsters.stuff.Spell;
