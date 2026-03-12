@@ -9,24 +9,55 @@ import fr.campus.dungeondicemonsters.stuff.Weapon;
 import fr.campus.dungeondicemonsters.stuff.Shield;
 import fr.campus.dungeondicemonsters.stuff.Spell;
 import fr.campus.dungeondicemonsters.stuff.Potion;
-import fr.campus.dungeondicemonsters.stuff.Kunai;
 import fr.campus.dungeondicemonsters.stuff.SmokeBomb;
-import fr.campus.dungeondicemonsters.stuff.BlackSuite; // Ajouté pour donner une vraie défense au Ninja
+import fr.campus.dungeondicemonsters.stuff.BlackSuite;
+
+
+import fr.campus.dungeondicemonsters.db.DatabaseConnection; // lien avec la BDD
+
+// class = plan de constuction
+
+
 
 public class Main {
-
+         //static = la classe n'appartien à la class elle meme
     public static void main(String[] args) {
+        //Variable Menu -> nommé menu
+        Menu menu = new Menu(); //ordonne à l'ordi de créer ce qui suit ex : menu() = l'appel au constructeur
 
-        Menu menu = new Menu();
+        //  initialisation de l'outil de base de données
+        DatabaseConnection db = new DatabaseConnection();
 
         menu.displayMessage("=== Bienvenue dans Dungeon Dice Monsters ===");
+      //comment ce lit ça = menu : utilise l'objet le point "." veut dire rentre dans cet objet et utilise une de ses capacités donc la méthode displayMessage pour afficher une msg
+
+
+
+        // --- 1. LECTURE (READ) ---
+        menu.displayMessage("\nChargement des personnages par défaut depuis MariaDB...");
+        db.getHeroes(); // Cette méthode va se connecter et afficher les 3 personnages !
+    //J'utilise la "db" -> ".getHeros execute la méthode qui vas lire MariaDB
         menu.displayMessage("Choisissez votre classe (1: Guerrier, 2: Mage, 3: Ninja) :");
         String choixType = menu.getUserInput();
 
-        menu.displayMessage("Entrez le nom de votre héros :");
+                        //.getUserInput: l'objet menu utilise "getUserInput()", qui met le programme en pause et récupère ce que l'utilisateur tape
+
+
+        menu.displayMessage("Entrez le nom de votre héros personnalisé :");
         String nomChoisi = menu.getUserInput();
 
+
+        // wwww   LA CRÉATION DU PERSO   wwww
+
         Character monHeros = null;
+
+        /**Explication du ".equals" SUPER IMPORTANT !!!!!
+         Pourquoi utliser equal au lieu de "==" en Java pour les objet ( le texte "String" est un objet en Java), le signe == ne regarde pas le texte mais,
+         regarde l'adresse mémoire. il vérifie si c'est exactement la même boîte physique dans la mémoire RAM donc exemple
+         si je prend une carte de TCG imaginons que je puisse avoir un dracofeu == me dit qu'il me faut strictement le meme que ce soit la meme carte un clone le meme carton alors que
+         si je n'ai pas ce dracofeu et que pour m'entrainer je decide de prendre une autre carte et je considère que c'est le dracofeu que j'ai besoin psk j'ai ecrit dracofeu dessu
+         alors .equals me permet de me dire que ce sont les meme cartes
+         */
 
         if (choixType.equals("1")) {
             monHeros = new Warrior(nomChoisi);
@@ -36,14 +67,11 @@ public class Main {
         } else if (choixType.equals("2")) {
             monHeros = new Wizard(nomChoisi);
             monHeros.setOffensiveEquipment(new Spell("Boule de feu", 3));
-            // CORRECTION : La potion demande maintenant 3 informations, dont un vrai/faux à la fin
             monHeros.setDefensiveEquipment(new Potion("Potion mineure", 2, false));
 
         } else if (choixType.equals("3")) {
             monHeros = new Ninja(nomChoisi);
-            // CORRECTION : La SmokeBomb demande maintenant un nom, un bonus attaque ET un bonus magie
             monHeros.setOffensiveEquipment(new SmokeBomb("Fumigène", 1, 2));
-            // CORRECTION : La SmokeBomb étant offensive, on donne une vraie armure au Ninja pour sa défense
             monHeros.setDefensiveEquipment(new BlackSuite("Tenue de l'ombre", 3));
 
         } else {
@@ -55,52 +83,38 @@ public class Main {
         menu.displayMessage("\nFélicitations ! Voici votre personnage :");
         menu.displayMessage(monHeros.toString());
 
-        // =========================================================
-        // === NOUVELLE PARTIE : LE LANCEMENT DU MOTEUR DE JEU ===
-        // =========================================================
+        //2. ÉCRITURE (CREATE)
+        menu.displayMessage("\nSauvegarde de votre héros personnalisé en base de données...");
+        db.createHero(monHeros); // Gson va transformer l'équipement en texte et le sauvegarder
+
+
+        // === LE LANCEMENT DU MOTEUR DE JEU ===
+
 
         menu.displayMessage("\nAppuyez sur Entrée pour commencer l'aventure !");
-        menu.getUserInput(); // Fait une pause en attendant la touche Entrée
+        menu.getUserInput();
 
-        // 1. On allume le moteur (Création du plateau et du pion)
         Game game = new Game();
-
-        // 2. On crée une étiquette qui dit que la partie est en cours
         boolean partieEnCours = true;
 
-        // 3. LA BOUCLE DE JEU (Game Loop)
-        // Tant que "partieEnCours" est Vrai, on répète ce bloc de code à l'infini
         while (partieEnCours) {
             menu.displayMessage("\n--- NOUVEAU TOUR ---");
             menu.displayMessage("Tapez '1' pour lancer le dé, ou 'q' pour quitter :");
             String action = menu.getUserInput();
 
             if (action.equalsIgnoreCase("q")) {
-                // Si le joueur tape 'q', on change l'étiquette en Faux.
-                // La boucle va s'arrêter et le jeu se termine.
                 menu.displayMessage("Vous fuyez le donjon lâchement... Fin de la partie.");
                 partieEnCours = false;
             } else {
-
-                // [NOUVEAU] LE FILET DE SÉCURITÉ (try / catch)
                 try {
-                    // On "essaye" de faire jouer un tour.
-                    // Si le joueur dépasse 64, cette ligne déclenche l'alarme et le code saute directement au "catch"
                     game.playTurn(monHeros);
-
                 } catch (OutOfBoardException e) {
-                    // SI l'alarme sonne, on l'attrape ici !
-
-                    // On affiche proprement le message de l'erreur (ex: "Victoire ! ... a dépassé la case 64")
                     menu.displayMessage(e.getMessage());
-
-                    // On change l'étiquette pour arrêter la boucle et terminer la partie
                     partieEnCours = false;
                 }
             }
         }
 
-        // On ferme proprement le scanner à la toute fin du programme
         menu.closeMenu();
     }
 }
